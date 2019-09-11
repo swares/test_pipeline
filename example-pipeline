@@ -1,0 +1,20 @@
+pipeline {
+    agent rhel6
+    options { timestamps () }
+    wrappers { buildName('#${BUILD_NUMBER}  ${REPO_NAME}') }
+    wrappers { [$class: 'MaskPasswordsBuildWrapper'] }
+    properties(
+      [buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '60', numToKeepStr: ''))],
+
+      parameters([
+        string(name: 'ARTIFACTORY', defaultValue: '', description: 'Artifactory Server', trim: true),
+        string(name: 'CUTOFFDATE', defaultValue: '', description: 'Cut off Date', trim: true),
+        string(name: 'REPO_NAME', defaultValue: '', description: 'The repository you want to clean up. Typically this value is where the rpms are stored.', trim: true),
+        string(name: 'PROPERTYTOMATCH', defaultValue: '@artifactType', description: 'The property where are looking at for each artifact. For example, UnitTest failed or FuncTest failed. Should be the name of the property preceded by an @ symbol', trim: true),
+      ])
+    )
+
+    git branch: 'TOOLS-1257', credentialsId: 'jenkinspipelines_bitbucket_creds', url: 'ssh://git@aurusdlbbt01:7999/devops_bob/pipelines.git'
+
+    cleanUpResult = sh(returnStdout: true, script: './Jenkinsfile/Artifactory_Purge/cleanUpArtifactory.groovy').trim()
+}
