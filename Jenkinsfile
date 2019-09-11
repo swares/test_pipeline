@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                sh 'php --version'
+                bat 'echo test on windows'
             }
         }
     }
